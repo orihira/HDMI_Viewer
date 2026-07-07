@@ -1,0 +1,1390 @@
+/* =====================================================
+   HDMI View
+   Main Style Sheet
+   Version 1.0.0
+
+   Part 1:
+   - Reset
+   - Variables
+   - Base Layout
+   - Loading Screen
+   - Header
+   - Viewer Area
+===================================================== */
+
+
+/* =========================
+   CSS Variables
+========================= */
+
+:root {
+
+    /* Colors */
+
+    --bg-color: #0a0a0a;
+    --surface-color: rgba(30, 30, 35, 0.75);
+    --surface-hover: rgba(50, 50, 55, 0.85);
+
+    --text-color: #ffffff;
+    --text-secondary: #8e8e93;
+
+    --accent-color: #0a84ff;
+
+    --success-color: #30d158;
+    --warning-color: #ffd60a;
+    --error-color: #ff453a;
+
+
+    /* Effects */
+
+    --blur: 20px;
+
+    --radius-small: 12px;
+    --radius-medium: 18px;
+    --radius-large: 28px;
+
+
+    /* Animation */
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+}
+
+
+/* =========================
+   Reset
+========================= */
+
+* {
+
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 0;
+
+}
+
+
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #202020,
+            var(--bg-color)
+        );
+
+    color: var(--text-color);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "Segoe UI",
+        sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+
+}
+
+
+/* =========================
+   App Container
+========================= */
+
+#app {
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+/* =========================
+   Loading Screen
+========================= */
+
+#loading-screen {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+
+    background:
+        linear-gradient(
+            145deg,
+            #111111,
+            #050505
+        );
+
+
+    transition:
+        opacity var(--transition-slow),
+        visibility var(--transition-slow);
+
+}
+
+
+#loading-screen h1 {
+
+    margin-top: 25px;
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+    letter-spacing: -1px;
+
+}
+
+
+#loading-screen p {
+
+    margin-top: 8px;
+
+    color: var(--text-secondary);
+
+    font-size: 15px;
+
+}
+
+
+/* Loader */
+
+.loader {
+
+    width: 48px;
+
+    height: 48px;
+
+    border-radius: 50%;
+
+    border:
+
+        4px solid
+
+        rgba(255,255,255,0.15);
+
+
+    border-top-color:
+
+        var(--accent-color);
+
+
+    animation:
+
+        spin 1s linear infinite;
+
+}
+
+
+/* =========================
+   Header
+========================= */
+
+header {
+
+    height: 70px;
+
+    padding:
+
+        0 24px;
+
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+
+    background:
+
+        rgba(20,20,20,0.65);
+
+
+    backdrop-filter:
+
+        blur(var(--blur));
+
+
+    -webkit-backdrop-filter:
+
+        blur(var(--blur));
+
+
+    border-bottom:
+
+        1px solid
+
+        rgba(255,255,255,0.08);
+
+
+    z-index: 10;
+
+}
+
+
+.title {
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.5px;
+
+}
+
+
+/* Status */
+
+#status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+
+    color:
+
+        var(--text-secondary);
+
+
+    font-size: 14px;
+
+}
+
+
+.status-dot {
+
+    width: 10px;
+
+    height: 10px;
+
+    border-radius: 50%;
+
+
+    background:
+
+        var(--error-color);
+
+
+    box-shadow:
+
+        0 0 10px
+
+        rgba(255,69,58,0.7);
+
+}
+
+
+/* =========================
+   Viewer
+========================= */
+
+main {
+
+    flex: 1;
+
+    position: relative;
+
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+
+    overflow: hidden;
+
+}
+
+
+/* Video */
+
+#video {
+
+    width: 100%;
+
+    height: 100%;
+
+
+    object-fit: contain;
+
+
+    background:
+
+        #000;
+
+
+    display: block;
+
+}
+
+
+/* No Signal Overlay */
+
+#overlay {
+
+    position: absolute;
+
+
+    display: flex;
+
+    flex-direction: column;
+
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    text-align: center;
+
+
+    color: white;
+
+
+    pointer-events: none;
+
+}
+
+
+#overlay h2 {
+
+    font-size: 30px;
+
+    margin-bottom: 10px;
+
+}
+
+
+#overlay p {
+
+    color:
+
+        var(--text-secondary);
+
+
+    font-size: 16px;
+
+}
+/* =====================================================
+   HDMI View
+   Main Style Sheet
+
+   Part 2:
+   - Control Bar
+   - Buttons
+   - Settings Panel
+   - Toast Notification
+===================================================== */
+
+
+/* =========================
+   Bottom Control Bar
+========================= */
+
+nav {
+
+    position: fixed;
+
+    left: 50%;
+
+    bottom: 24px;
+
+    transform:
+
+        translateX(-50%);
+
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+
+    padding: 12px 16px;
+
+
+    background:
+
+        rgba(30,30,35,0.75);
+
+
+    backdrop-filter:
+
+        blur(var(--blur));
+
+
+    -webkit-backdrop-filter:
+
+        blur(var(--blur));
+
+
+    border:
+
+        1px solid
+
+        rgba(255,255,255,0.12);
+
+
+    border-radius:
+
+        var(--radius-large);
+
+
+    box-shadow:
+
+        0 20px 40px
+
+        rgba(0,0,0,0.35);
+
+
+    z-index: 20;
+
+
+    transition:
+
+        opacity var(--transition-normal),
+
+        transform var(--transition-normal);
+
+}
+
+
+/* =========================
+   Buttons
+========================= */
+
+button {
+
+    border: none;
+
+    outline: none;
+
+
+    cursor: pointer;
+
+
+    color:
+
+        var(--text-color);
+
+
+    background:
+
+        rgba(255,255,255,0.1);
+
+
+    padding:
+
+        12px 18px;
+
+
+    border-radius:
+
+        var(--radius-medium);
+
+
+    font-size:
+
+        15px;
+
+
+    font-weight:
+
+        600;
+
+
+    letter-spacing:
+
+        -0.2px;
+
+
+    transition:
+
+        background var(--transition-fast),
+
+        transform var(--transition-fast),
+
+        box-shadow var(--transition-fast);
+
+}
+
+
+button:hover {
+
+
+    background:
+
+        rgba(255,255,255,0.18);
+
+
+}
+
+
+button:active {
+
+
+    transform:
+
+        scale(0.94);
+
+
+}
+
+
+/* Primary Button */
+
+#connectButton {
+
+
+    background:
+
+        var(--accent-color);
+
+
+    box-shadow:
+
+        0 8px 20px
+
+        rgba(10,132,255,0.35);
+
+
+}
+
+
+#connectButton:hover {
+
+
+    background:
+
+        #409cff;
+
+
+}
+
+
+/* =========================
+   Fullscreen Mode
+========================= */
+
+.fullscreen nav {
+
+
+    bottom:
+
+        40px;
+
+}
+
+
+.fullscreen header {
+
+
+    opacity:
+
+        0;
+
+
+    pointer-events:
+
+        none;
+
+}
+
+
+/* =========================
+   Settings Panel
+========================= */
+
+#settings-panel {
+
+
+    position:
+
+        fixed;
+
+
+    right:
+
+        20px;
+
+
+    top:
+
+        90px;
+
+
+    width:
+
+        320px;
+
+
+    padding:
+
+        22px;
+
+
+    background:
+
+        rgba(30,30,35,0.85);
+
+
+    backdrop-filter:
+
+        blur(var(--blur));
+
+
+    -webkit-backdrop-filter:
+
+        blur(var(--blur));
+
+
+    border:
+
+        1px solid
+
+        rgba(255,255,255,0.12);
+
+
+    border-radius:
+
+        var(--radius-large);
+
+
+    box-shadow:
+
+        0 20px 50px
+
+        rgba(0,0,0,0.5);
+
+
+    transform:
+
+        translateX(120%);
+
+
+    opacity:
+
+        0;
+
+
+    transition:
+
+        transform var(--transition-normal),
+
+        opacity var(--transition-normal);
+
+
+    z-index:
+
+        50;
+
+}
+
+
+#settings-panel.active {
+
+
+    transform:
+
+        translateX(0);
+
+
+    opacity:
+
+        1;
+
+}
+
+
+/* Settings Title */
+
+.settings-title {
+
+
+    font-size:
+
+        20px;
+
+
+    font-weight:
+
+        700;
+
+
+    margin-bottom:
+
+        20px;
+
+}
+
+
+/* =========================
+   Toast Notification
+========================= */
+
+#toast {
+
+
+    position:
+
+        fixed;
+
+
+    left:
+
+        50%;
+
+
+    bottom:
+
+        100px;
+
+
+    transform:
+
+        translateX(-50%)
+
+        translateY(20px);
+
+
+    padding:
+
+        12px 20px;
+
+
+    background:
+
+        rgba(40,40,45,0.9);
+
+
+    backdrop-filter:
+
+        blur(15px);
+
+
+    border-radius:
+
+        14px;
+
+
+    font-size:
+
+        14px;
+
+
+    opacity:
+
+        0;
+
+
+    pointer-events:
+
+        none;
+
+
+    transition:
+
+        opacity var(--transition-normal),
+
+        transform var(--transition-normal);
+
+
+    z-index:
+
+        100;
+
+}
+
+
+#toast.show {
+
+
+    opacity:
+
+        1;
+
+
+    transform:
+
+        translateX(-50%)
+
+        translateY(0);
+
+}
+
+
+/* =========================
+   Glass Effect Utilities
+========================= */
+
+.glass {
+
+
+    background:
+
+        rgba(255,255,255,0.08);
+
+
+    backdrop-filter:
+
+        blur(20px);
+
+
+    -webkit-backdrop-filter:
+
+        blur(20px);
+
+
+    border:
+
+        1px solid
+
+        rgba(255,255,255,0.12);
+
+}
+
+
+/* =========================
+   Hidden UI
+========================= */
+
+.ui-hidden header,
+
+.ui-hidden nav {
+
+
+    opacity:
+
+        0;
+
+
+    pointer-events:
+
+        none;
+
+}
+
+
+/* =========================
+   Focus
+========================= */
+
+button:focus-visible {
+
+
+    outline:
+
+        3px solid
+
+        var(--accent-color);
+
+
+    outline-offset:
+
+        3px;
+
+}
+/* =====================================================
+   HDMI View
+   Main Style Sheet
+
+   Part 3:
+   - Animations
+   - Responsive Design
+   - iPad Optimization
+   - Final Adjustments
+===================================================== */
+
+
+/* =========================
+   Animations
+========================= */
+
+@keyframes spin {
+
+
+    from {
+
+        transform:
+
+            rotate(0deg);
+
+    }
+
+
+    to {
+
+        transform:
+
+            rotate(360deg);
+
+    }
+
+}
+
+
+
+@keyframes fadeIn {
+
+
+    from {
+
+        opacity:
+
+            0;
+
+        transform:
+
+            translateY(10px);
+
+    }
+
+
+    to {
+
+        opacity:
+
+            1;
+
+        transform:
+
+            translateY(0);
+
+    }
+
+}
+
+
+
+@keyframes pulse {
+
+
+    0% {
+
+        box-shadow:
+
+            0 0 0 0
+
+            rgba(48,209,88,0.5);
+
+    }
+
+
+    70% {
+
+        box-shadow:
+
+            0 0 0 10px
+
+            rgba(48,209,88,0);
+
+    }
+
+
+    100% {
+
+        box-shadow:
+
+            0 0 0 0
+
+            rgba(48,209,88,0);
+
+    }
+
+}
+
+
+/* App Start Animation */
+
+#app {
+
+
+    animation:
+
+        fadeIn
+
+        0.5s
+
+        ease;
+
+}
+
+
+
+/* Connected Status Animation */
+
+.status-connected {
+
+
+    background:
+
+        var(--success-color);
+
+
+    box-shadow:
+
+        0 0 12px
+
+        rgba(48,209,88,0.8);
+
+
+    animation:
+
+        pulse
+
+        2s
+
+        infinite;
+
+}
+
+
+/* =========================
+   Responsive
+========================= */
+
+
+/* Tablet / iPad */
+
+@media screen and (max-width: 900px) {
+
+
+    header {
+
+
+        height:
+
+            60px;
+
+
+        padding:
+
+            0 18px;
+
+
+    }
+
+
+
+    .title {
+
+
+        font-size:
+
+            20px;
+
+
+    }
+
+
+
+    nav {
+
+
+        bottom:
+
+            18px;
+
+
+        padding:
+
+            10px;
+
+
+        gap:
+
+            8px;
+
+
+    }
+
+
+
+    button {
+
+
+        padding:
+
+            10px 14px;
+
+
+        font-size:
+
+            14px;
+
+
+    }
+
+
+}
+
+
+
+/* Small Screen */
+
+@media screen and (max-width: 500px) {
+
+
+    #status-text {
+
+
+        display:
+
+            none;
+
+
+    }
+
+
+
+    nav {
+
+
+        width:
+
+            calc(100% - 30px);
+
+
+        justify-content:
+
+            center;
+
+
+    }
+
+
+
+    button {
+
+
+        flex:
+
+            1;
+
+
+        padding:
+
+            12px 8px;
+
+
+    }
+
+
+
+    #overlay h2 {
+
+
+        font-size:
+
+            24px;
+
+
+    }
+
+
+}
+
+
+/* =========================
+   Landscape Optimization
+========================= */
+
+@media screen and (orientation: landscape) {
+
+
+    header {
+
+
+        height:
+
+            55px;
+
+
+    }
+
+
+
+    nav {
+
+
+        bottom:
+
+            15px;
+
+
+    }
+
+}
+
+
+
+/* =========================
+   Fullscreen Optimization
+========================= */
+
+
+:fullscreen {
+
+
+    background:
+
+        #000;
+
+}
+
+
+
+:fullscreen #video {
+
+
+    width:
+
+        100vw;
+
+
+    height:
+
+        100vh;
+
+
+    object-fit:
+
+        contain;
+
+}
+
+
+
+/* =========================
+   Touch Device
+========================= */
+
+@media (hover:none) {
+
+
+    button:hover {
+
+
+        background:
+
+            rgba(255,255,255,0.1);
+
+
+    }
+
+
+
+    button:active {
+
+
+        transform:
+
+            scale(0.92);
+
+
+    }
+
+
+}
+
+
+
+/* =========================
+   Reduced Motion
+========================= */
+
+@media(prefers-reduced-motion:reduce) {
+
+
+    *,
+    *::before,
+    *::after {
+
+
+        animation-duration:
+
+            0.01ms !important;
+
+
+        transition-duration:
+
+            0.01ms !important;
+
+
+    }
+
+
+}
+
+
+
+/* =========================
+   Utility Classes
+========================= */
+
+.hidden {
+
+
+    display:
+
+        none !important;
+
+}
+
+
+
+.fade {
+
+
+    opacity:
+
+        0;
+
+}
+
+
+
+.visible {
+
+
+    opacity:
+
+        1;
+
+}
+
+
+/* =========================
+   End
+========================= */

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0,
+                   viewport-fit=cover">
+
+    <meta name="theme-color" content="#0A0A0A">
+
+    <meta name="apple-mobile-web-app-capable"
+          content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent">
+
+    <meta name="apple-mobile-web-app-title"
+          content="HDMI View">
+
+    <title>HDMI View</title>
+
+    <link rel="manifest"
+          href="manifest.json">
+
+    <link rel="stylesheet"
+          href="css/main.css">
+
+</head>
+
+<body>
+
+<!-- Loading -->
+
+<div id="loading-screen">
+
+    <div class="loader"></div>
+
+    <h1>HDMI View</h1>
+
+    <p>Loading...</p>
+
+</div>
+
+<!-- App -->
+
+<div id="app">
+
+    <!-- Header -->
+
+    <header>
+
+        <div class="title">
+
+            HDMI View
+
+        </div>
+
+        <div id="status">
+
+            <span class="status-dot"></span>
+
+            <span id="status-text">
+
+                Not Connected
+
+            </span>
+
+        </div>
+
+    </header>
+
+    <!-- Viewer -->
+
+    <main>
+
+        <video
+            id="video"
+            autoplay
+            playsinline
+            muted>
+
+        </video>
+
+        <div id="overlay">
+
+            <h2>No Signal</h2>
+
+            <p>
+
+                Press Connect to start.
+
+            </p>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Bar -->
+
+    <nav>
+
+        <button id="connectButton">
+
+            Connect
+
+        </button>
+
+        <button id="fitButton">
+
+            Fit
+
+        </button>
+
+        <button id="fullscreenButton">
+
+            Fullscreen
+
+        </button>
+
+        <button id="settingsButton">
+
+            Settings
+
+        </button>
+
+    </nav>
+
+</div>
+
+<!-- Toast -->
+
+<div id="toast">
+
+</div>
+
+<script src="js/capture.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
