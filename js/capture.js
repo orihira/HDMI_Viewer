@@ -1,10 +1,11 @@
 /* =====================================================
    HDMI View
-   Capture Controller v1.1
+   Capture Controller v1.2
 
    - Device selection
    - USB camera support
    - HDMI capture support
+   - Quality selection support
 ===================================================== */
 
 
@@ -23,6 +24,13 @@ const Capture = {
 const cameraSelect =
     document.getElementById(
         "cameraSelect"
+    );
+
+
+
+const qualitySelect =
+    document.getElementById(
+        "qualitySelect"
     );
 
 
@@ -120,6 +128,103 @@ async function loadDevices(){
 
 
 /* =========================
+   Quality Setting
+========================= */
+
+
+function getQualitySetting(){
+
+
+    const quality =
+        qualitySelect.value;
+
+
+
+    let width = 1920;
+
+    let height = 1080;
+
+    let fps = 60;
+
+
+
+    switch (quality) {
+
+
+        case "1080p60":
+
+            width = 1920;
+            height = 1080;
+            fps = 60;
+
+            break;
+
+
+
+        case "1080p30":
+
+            width = 1920;
+            height = 1080;
+            fps = 30;
+
+            break;
+
+
+
+        case "720p60":
+
+            width = 1280;
+            height = 720;
+            fps = 60;
+
+            break;
+
+
+
+        case "720p30":
+
+            width = 1280;
+            height = 720;
+            fps = 30;
+
+            break;
+
+
+
+        case "480p30":
+
+            width = 640;
+            height = 480;
+            fps = 30;
+
+            break;
+
+
+
+        case "auto":
+
+            width = undefined;
+            height = undefined;
+            fps = undefined;
+
+            break;
+
+
+    }
+
+
+
+    return {
+
+        width,
+        height,
+        fps
+
+    };
+
+
+}
+/* =========================
    Start Capture
 ========================= */
 
@@ -137,11 +242,23 @@ async function startCapture(){
 
         if(!deviceId){
 
+
             throw new Error(
                 "No camera selected"
             );
 
+
         }
+
+
+
+        /*
+            Connectを押した時点の
+            品質設定を取得
+        */
+
+        const quality =
+            getQualitySetting();
 
 
 
@@ -149,6 +266,7 @@ async function startCapture(){
 
 
             stopCapture();
+
 
         }
 
@@ -161,24 +279,47 @@ async function startCapture(){
 
 
                 deviceId:{
-                    exact:
-                    deviceId
+
+
+                    exact:deviceId
+
+
                 },
 
 
-                width:{
-                    ideal:1920
-                },
+                width:
+                    quality.width
+                    ?
+                    {
+                        ideal:
+                        quality.width
+                    }
+                    :
+                    undefined,
 
 
-                height:{
-                    ideal:1080
-                },
+
+                height:
+                    quality.height
+                    ?
+                    {
+                        ideal:
+                        quality.height
+                    }
+                    :
+                    undefined,
 
 
-                frameRate:{
-                    ideal:60
-                }
+
+                frameRate:
+                    quality.fps
+                    ?
+                    {
+                        ideal:
+                        quality.fps
+                    }
+                    :
+                    undefined
 
 
             },
@@ -191,6 +332,8 @@ async function startCapture(){
 
 
 
+
+
         const stream =
             await navigator.mediaDevices
             .getUserMedia(
@@ -199,8 +342,12 @@ async function startCapture(){
 
 
 
+
+
         Capture.stream =
             stream;
+
+
 
 
 
@@ -211,12 +358,18 @@ async function startCapture(){
 
 
 
+
+
         video.srcObject =
             stream;
 
 
 
+
+
         await video.play();
+
+
 
 
 
@@ -229,48 +382,103 @@ async function startCapture(){
 
 
 
+
+
         setStatus(
+
             true,
+
             "Connected"
+
         );
+
+
+
+
+
+        const settings =
+            stream
+            .getVideoTracks()[0]
+            .getSettings();
+
+
+
 
 
         showToast(
-            "Connected"
+
+            `${settings.width}×${settings.height} ${settings.frameRate || "?"}fps`
+
         );
+
+
+
 
 
         console.log(
+
             "Connected device:",
-            cameraSelect.selectedOptions[0].text
+
+            cameraSelect
+            .selectedOptions[0]
+            .text
+
         );
+
+
+
+
+
+        console.log(
+
+            "Quality:",
+
+            quality
+
+        );
+
+
+
 
 
     }catch(error){
 
 
+
         console.error(
+
             error
+
         );
+
+
+
 
 
         setStatus(
+
             false,
+
             "Error"
+
         );
+
+
+
 
 
         showToast(
+
             error.message
+
         );
+
+
 
     }
 
 
 }
-
-
-
 /* =========================
    Stop
 ========================= */
@@ -285,20 +493,27 @@ function stopCapture(){
         Capture.stream
         .getTracks()
         .forEach(
+
             track =>
             track.stop()
+
         );
 
 
     }
 
 
-    Capture.stream=null;
+
+    Capture.stream = null;
+
 
 
     setStatus(
+
         false,
+
         "Disconnected"
+
     );
 
 
@@ -312,19 +527,33 @@ function stopCapture(){
 
 
 window.addEventListener(
+
     "load",
+
     loadDevices
+
 );
 
 
 
+
+
 window.startCapture =
+
     startCapture;
 
 
+
+
+
 window.stopCapture =
+
     stopCapture;
 
 
+
+
+
 window.Capture =
+
     Capture;
