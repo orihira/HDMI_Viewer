@@ -1,136 +1,118 @@
 /* =====================================================
    HDMI View
-   Capture Controller
+   Capture Controller v1.1
 
-   Version 1.0.0
-
-   Responsibilities:
-   - Detect UVC devices
-   - Connect camera stream
-   - Attach stream to video
-   - Handle errors
+   - Device selection
+   - USB camera support
+   - HDMI capture support
 ===================================================== */
 
 
 const Capture = {
 
+    stream:null,
 
-    stream: null,
+    devices:[],
 
-
-    deviceId: null,
-
-
-    connected: false,
-
-
-    devices: []
-
+    selectedDevice:null
 
 };
 
 
 
+const cameraSelect =
+    document.getElementById(
+        "cameraSelect"
+    );
+
+
+
 /* =========================
-   Device Detection
+   Get Cameras
 ========================= */
 
 
-async function getDevices(){
+async function loadDevices(){
 
 
     try{
 
 
+        // permission取得
+        await navigator.mediaDevices
+            .getUserMedia({
+                video:true,
+                audio:false
+            });
+
+
+
         const devices =
             await navigator.mediaDevices
-                .enumerateDevices();
+            .enumerateDevices();
 
 
 
         Capture.devices =
             devices.filter(
-                device =>
-                    device.kind === "videoinput"
+                d =>
+                d.kind === "videoinput"
             );
 
 
 
-        console.log(
-            "Video devices:",
-            Capture.devices
+        cameraSelect.innerHTML="";
+
+
+
+        Capture.devices.forEach(
+            (device,index)=>{
+
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    device.deviceId;
+
+
+                option.textContent =
+                    device.label ||
+                    `Camera ${index+1}`;
+
+
+
+                cameraSelect.appendChild(
+                    option
+                );
+
+
+            }
         );
 
 
 
-        return Capture.devices;
+        console.log(
+            "Camera list:",
+            Capture.devices
+        );
 
 
 
     }catch(error){
 
 
-        console.error(
-            error
-        );
+        console.error(error);
 
 
         showToast(
             "Camera detection failed"
         );
 
-
-        return [];
-
     }
-
-
-}
-
-
-
-/* =========================
-   Find Capture Device
-========================= */
-
-
-function findCaptureDevice(){
-
-
-    const keywords = [
-
-        "capture",
-
-        "hdmi",
-
-        "usb",
-
-        "video",
-
-        "uvc"
-
-    ];
-
-
-
-    return Capture.devices.find(
-        device =>{
-
-
-            const name =
-                device.label
-                    .toLowerCase();
-
-
-
-            return keywords.some(
-                key =>
-                    name.includes(key)
-            );
-
-
-        }
-    );
 
 
 }
@@ -148,40 +130,27 @@ async function startCapture(){
     try{
 
 
-        await getDevices();
+        const deviceId =
+            cameraSelect.value;
 
 
 
-        let device =
-            findCaptureDevice();
-
-
-
-        if(!device){
-
-
-            device =
-                Capture.devices[0];
-
-        }
-
-
-
-        if(!device){
-
+        if(!deviceId){
 
             throw new Error(
-                "No camera found"
+                "No camera selected"
             );
 
         }
 
 
 
-        console.log(
-            "Using:",
-            device.label
-        );
+        if(Capture.stream){
+
+
+            stopCapture();
+
+        }
 
 
 
@@ -193,28 +162,22 @@ async function startCapture(){
 
                 deviceId:{
                     exact:
-                    device.deviceId
+                    deviceId
                 },
 
 
                 width:{
-
                     ideal:1920
-
                 },
 
 
                 height:{
-
                     ideal:1080
-
                 },
 
 
                 frameRate:{
-
                     ideal:60
-
                 }
 
 
@@ -230,19 +193,14 @@ async function startCapture(){
 
         const stream =
             await navigator.mediaDevices
-                .getUserMedia(
-                    constraints
-                );
+            .getUserMedia(
+                constraints
+            );
 
 
 
         Capture.stream =
             stream;
-
-
-
-        Capture.deviceId =
-            device.deviceId;
 
 
 
@@ -262,22 +220,12 @@ async function startCapture(){
 
 
 
-        HDMIView.stream =
-            stream;
-
-
-
-        Capture.connected =
-            true;
-
-
-
         document
-            .getElementById(
-                "overlay"
-            )
-            .style.display =
-                "none";
+        .getElementById(
+            "overlay"
+        )
+        .style.display =
+            "none";
 
 
 
@@ -287,18 +235,21 @@ async function startCapture(){
         );
 
 
-
         showToast(
-            "HDMI Connected"
+            "Connected"
         );
 
+
+        console.log(
+            "Connected device:",
+            cameraSelect.selectedOptions[0].text
+        );
 
 
     }catch(error){
 
 
         console.error(
-            "Capture Error:",
             error
         );
 
@@ -313,7 +264,6 @@ async function startCapture(){
             error.message
         );
 
-
     }
 
 
@@ -322,38 +272,28 @@ async function startCapture(){
 
 
 /* =========================
-   Stop Capture
+   Stop
 ========================= */
 
 
 function stopCapture(){
 
 
-    if(
-        Capture.stream
-    ){
+    if(Capture.stream){
 
 
         Capture.stream
-            .getTracks()
-            .forEach(
-                track =>
-                    track.stop()
-            );
+        .getTracks()
+        .forEach(
+            track =>
+            track.stop()
+        );
 
 
     }
 
 
-
-    Capture.stream =
-        null;
-
-
-
-    Capture.connected =
-        false;
-
+    Capture.stream=null;
 
 
     setStatus(
@@ -362,70 +302,20 @@ function stopCapture(){
     );
 
 
-
-    showToast(
-        "Disconnected"
-    );
-
-
 }
 
 
 
 /* =========================
-   Browser Support
-========================= */
-
-
-function checkSupport(){
-
-
-    if(
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices
-            .getUserMedia
-    ){
-
-
-        showToast(
-            "Browser not supported"
-        );
-
-
-        return false;
-
-
-    }
-
-
-    return true;
-
-
-}
-
-
-
-/* =========================
-   Initialize
+   Init
 ========================= */
 
 
 window.addEventListener(
     "load",
-    ()=>{
-
-
-        checkSupport();
-
-
-    }
+    loadDevices
 );
 
-
-
-/* =========================
-   Export
-========================= */
 
 
 window.startCapture =
