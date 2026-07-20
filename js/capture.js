@@ -396,10 +396,52 @@ async function startCapture(){
 
 
 
-        const settings =
+        const track =
             stream
-            .getVideoTracks()[0]
-            .getSettings();
+            .getVideoTracks()[0];
+
+
+
+        const settings =
+            track.getSettings();
+
+
+
+        /* =========================
+           Debug: Settings / Capabilities
+
+           実際にブラウザが選んだ設定と、
+           デバイスが本来対応できる範囲を
+           確認するためのログ。
+
+           特に frameRate の max値が低い場合は
+           YUY2などの無圧縮フォーマットを
+           掴んでいる可能性が高い。
+        ========================= */
+
+        console.log(
+            "Settings:",
+            settings
+        );
+
+
+        if(track.getCapabilities){
+
+            const capabilities =
+                track.getCapabilities();
+
+            console.log(
+                "Capabilities:",
+                capabilities
+            );
+
+        }else{
+
+            console.warn(
+                "getCapabilities() is not supported on this browser."
+            );
+
+        }
 
 
 
