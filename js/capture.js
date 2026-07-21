@@ -1,11 +1,14 @@
 /* =====================================================
    HDMI View
-   Capture Controller v1.2
+   Capture Controller v1.3
 
    - Device selection
    - USB camera support
    - HDMI capture support
    - Quality selection support
+   - On-screen debug log panel
+     (MDM管理下のiPadでMac接続が
+      できない環境向け)
 ===================================================== */
 
 
@@ -32,6 +35,358 @@ const qualitySelect =
     document.getElementById(
         "qualitySelect"
     );
+
+
+
+/* =========================
+   On-screen Debug Panel
+
+   画面右下に半透明のログパネルを
+   自動生成して、そこに console.log /
+   console.warn / console.error の
+   内容をそのまま表示する。
+
+   HTML側の変更は不要。
+========================= */
+
+
+const DebugPanel = {
+
+    el:null,
+
+    logEl:null,
+
+    visible:true
+
+};
+
+
+
+function createDebugPanel(){
+
+
+    const panel =
+        document.createElement("div");
+
+
+    panel.id =
+        "debug-panel";
+
+
+    panel.style.cssText = `
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        max-height:40vh;
+        overflow-y:auto;
+        background:rgba(0,0,0,0.85);
+        color:#0f0;
+        font-family:monospace;
+        font-size:11px;
+        line-height:1.4;
+        padding:8px;
+        padding-bottom:24px;
+        z-index:99999;
+        white-space:pre-wrap;
+        word-break:break-all;
+        box-sizing:border-box;
+    `;
+
+
+
+    const toggleBtn =
+        document.createElement("button");
+
+
+    toggleBtn.textContent =
+        "Log";
+
+
+    toggleBtn.style.cssText = `
+        position:fixed;
+        right:8px;
+        bottom:8px;
+        z-index:100000;
+        background:#333;
+        color:#fff;
+        border:1px solid #666;
+        border-radius:6px;
+        padding:6px 10px;
+        font-size:12px;
+        opacity:0.8;
+    `;
+
+
+    toggleBtn.addEventListener(
+        "click",
+        ()=>{
+
+            DebugPanel.visible =
+                !DebugPanel.visible;
+
+
+            panel.style.display =
+                DebugPanel.visible
+                ?
+                "block"
+                :
+                "none";
+
+        }
+    );
+
+
+
+    const clearBtn =
+        document.createElement("button");
+
+
+    clearBtn.textContent =
+        "Clear";
+
+
+    clearBtn.style.cssText = `
+        position:fixed;
+        right:64px;
+        bottom:8px;
+        z-index:100000;
+        background:#333;
+        color:#fff;
+        border:1px solid #666;
+        border-radius:6px;
+        padding:6px 10px;
+        font-size:12px;
+        opacity:0.8;
+    `;
+
+
+    clearBtn.addEventListener(
+        "click",
+        ()=>{
+
+            panel.textContent =
+                "";
+
+        }
+    );
+
+
+
+    document.body.appendChild(
+        panel
+    );
+
+
+    document.body.appendChild(
+        toggleBtn
+    );
+
+
+    document.body.appendChild(
+        clearBtn
+    );
+
+
+
+    DebugPanel.el =
+        panel;
+
+}
+
+
+
+function appendDebugLine(
+    level,
+    args
+){
+
+
+    if(!DebugPanel.el){
+
+        return;
+
+    }
+
+
+    const time =
+        new Date()
+        .toLocaleTimeString();
+
+
+    let text;
+
+
+    try{
+
+
+        text =
+            args
+            .map(a=>{
+
+                if(
+                    typeof a === "object"
+                ){
+
+                    return JSON.stringify(
+                        a,
+                        null,
+                        2
+                    );
+
+                }
+
+                return String(a);
+
+            })
+            .join(" ");
+
+
+    }catch(e){
+
+
+        text =
+            "[unserializable log]";
+
+
+    }
+
+
+
+    const color =
+
+        level === "error"
+        ?
+        "#f55"
+        :
+        level === "warn"
+        ?
+        "#fd5"
+        :
+        "#0f0";
+
+
+
+    const line =
+        document.createElement(
+            "div"
+        );
+
+
+    line.style.color =
+        color;
+
+
+    line.textContent =
+        `[${time}] ${text}`;
+
+
+
+    DebugPanel.el.appendChild(
+        line
+    );
+
+
+
+    DebugPanel.el.scrollTop =
+        DebugPanel.el.scrollHeight;
+
+}
+
+
+
+function hookConsole(){
+
+
+    const original = {
+
+        log:console.log,
+
+        warn:console.warn,
+
+        error:console.error
+
+    };
+
+
+
+    ["log","warn","error"].forEach(
+        level=>{
+
+            console[level] =
+                (...args)=>{
+
+                    original[level](
+                        ...args
+                    );
+
+
+                    appendDebugLine(
+                        level,
+                        args
+                    );
+
+                };
+
+        }
+    );
+
+
+
+    /*
+        画面上で拾えなかった
+        エラーも表示する
+    */
+
+    window.addEventListener(
+        "error",
+        (e)=>{
+
+            appendDebugLine(
+                "error",
+                [
+                    `Uncaught: ${e.message}`,
+                    `(${e.filename}:${e.lineno})`
+                ]
+            );
+
+        }
+    );
+
+
+    window.addEventListener(
+        "unhandledrejection",
+        (e)=>{
+
+            appendDebugLine(
+                "error",
+                [
+                    "Unhandled rejection:",
+                    e.reason
+                ]
+            );
+
+        }
+    );
+
+}
+
+
+
+window.addEventListener(
+    "load",
+    ()=>{
+
+        createDebugPanel();
+
+        hookConsole();
+
+        console.log(
+            "Debug panel ready"
+        );
+
+    }
+);
 
 
 
@@ -332,6 +687,13 @@ async function startCapture(){
 
 
 
+        console.log(
+            "Constraints:",
+            constraints
+        );
+
+
+
 
 
         const stream =
@@ -417,6 +779,9 @@ async function startCapture(){
            特に frameRate の max値が低い場合は
            YUY2などの無圧縮フォーマットを
            掴んでいる可能性が高い。
+
+           右下の「Log」ボタンで
+           画面上に表示される。
         ========================= */
 
         console.log(
