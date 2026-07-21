@@ -596,6 +596,713 @@ function stopFpsMonitor(){
 
 
 /* =========================
+   Screenshot
+   (無音: OSのスクリーンショット機能を
+   使わず、canvasでフレームを直接
+   画像化して保存する)
+========================= */
+
+
+function takeScreenshot(){
+
+
+    const video =
+        document.getElementById(
+            "video"
+        );
+
+
+
+    if(
+        !video ||
+        !video.videoWidth
+    ){
+
+
+        showToast(
+            "No video to capture"
+        );
+
+
+        return;
+
+    }
+
+
+
+    const canvas =
+        document.createElement(
+            "canvas"
+        );
+
+
+    canvas.width =
+        video.videoWidth;
+
+
+    canvas.height =
+        video.videoHeight;
+
+
+
+    const ctx =
+        canvas.getContext(
+            "2d"
+        );
+
+
+    ctx.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+
+    canvas.toBlob(
+        (blob)=>{
+
+
+            if(!blob){
+
+
+                showToast(
+                    "Screenshot failed"
+                );
+
+
+                return;
+
+            }
+
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+
+            const a =
+                document.createElement(
+                    "a"
+                );
+
+
+            const stamp =
+                new Date()
+                .toISOString()
+                .replace(/[:.]/g,"-");
+
+
+            a.href =
+                url;
+
+
+            a.download =
+                `hdmiview-${stamp}.png`;
+
+
+            document.body.appendChild(
+                a
+            );
+
+
+            a.click();
+
+
+            a.remove();
+
+
+
+            URL.revokeObjectURL(
+                url
+            );
+
+
+
+            showToast(
+                "Screenshot saved"
+            );
+
+
+        },
+        "image/png"
+    );
+
+}
+
+
+
+/* =========================
+   In-app Recording
+   (無音: iOSの画面収録を使わず、
+   MediaRecorderで映像ストリームを
+   直接録画する)
+========================= */
+
+
+const Recorder = {
+
+    active:false,
+
+    recorder:null,
+
+    chunks:[],
+
+    startTime:0,
+
+    timerInterval:null
+
+};
+
+
+
+function pickRecorderMimeType(){
+
+
+    const candidates = [
+
+        "video/mp4",
+
+        "video/webm;codecs=vp9",
+
+        "video/webm;codecs=vp8",
+
+        "video/webm"
+
+    ];
+
+
+
+    for(
+        const type of candidates
+    ){
+
+
+        if(
+            window.MediaRecorder &&
+            MediaRecorder.isTypeSupported(
+                type
+            )
+        ){
+
+
+            return type;
+
+        }
+
+    }
+
+
+
+    return "";
+
+}
+
+
+
+function startRecording(){
+
+
+    if(
+        !Capture.stream
+    ){
+
+
+        showToast(
+            "Not connected"
+        );
+
+
+        return;
+
+    }
+
+
+
+    if(
+        !window.MediaRecorder
+    ){
+
+
+        showToast(
+            "Recording not supported"
+        );
+
+
+        return;
+
+    }
+
+
+
+    const mimeType =
+        pickRecorderMimeType();
+
+
+
+    try{
+
+
+        Recorder.recorder =
+            new MediaRecorder(
+                Capture.stream,
+                mimeType
+                ?
+                { mimeType }
+                :
+                undefined
+            );
+
+
+    }catch(error){
+
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            "Recording failed to start"
+        );
+
+
+        return;
+
+    }
+
+
+
+    Recorder.chunks = [];
+
+
+
+    Recorder.recorder.ondataavailable =
+        (e)=>{
+
+
+            if(
+                e.data &&
+                e.data.size > 0
+            ){
+
+
+                Recorder.chunks.push(
+                    e.data
+                );
+
+            }
+
+        };
+
+
+
+    Recorder.recorder.onstop =
+        ()=>{
+
+
+            saveRecording(
+                mimeType ||
+                "video/webm"
+            );
+
+        };
+
+
+
+    Recorder.recorder.start();
+
+
+
+    Recorder.active =
+        true;
+
+
+    Recorder.startTime =
+        performance.now();
+
+
+
+    updateRecordButton();
+
+
+
+    Recorder.timerInterval =
+        setInterval(
+            updateRecordButton,
+            500
+        );
+
+
+
+    console.log(
+        "Recording started:",
+        mimeType
+    );
+
+}
+
+
+
+function stopRecording(){
+
+
+    if(
+        !Recorder.recorder ||
+        !Recorder.active
+    ){
+
+
+        return;
+
+    }
+
+
+
+    Recorder.recorder.stop();
+
+
+
+    Recorder.active =
+        false;
+
+
+
+    clearInterval(
+        Recorder.timerInterval
+    );
+
+
+
+    updateRecordButton();
+
+}
+
+
+
+function saveRecording(
+    mimeType
+){
+
+
+    const blob =
+        new Blob(
+            Recorder.chunks,
+            { type:mimeType }
+        );
+
+
+
+    const ext =
+        mimeType.includes("mp4")
+        ?
+        "mp4"
+        :
+        "webm";
+
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    const stamp =
+        new Date()
+        .toISOString()
+        .replace(/[:.]/g,"-");
+
+
+    a.href =
+        url;
+
+
+    a.download =
+        `hdmiview-${stamp}.${ext}`;
+
+
+    document.body.appendChild(
+        a
+    );
+
+
+    a.click();
+
+
+    a.remove();
+
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+
+
+    Recorder.chunks = [];
+
+
+
+    showToast(
+        "Recording saved"
+    );
+
+}
+
+
+
+function toggleRecording(){
+
+
+    if(
+        Recorder.active
+    ){
+
+
+        stopRecording();
+
+
+    }else{
+
+
+        startRecording();
+
+
+    }
+
+}
+
+
+
+function formatElapsed(ms){
+
+
+    const totalSec =
+        Math.floor(
+            ms/1000
+        );
+
+
+    const min =
+        Math.floor(
+            totalSec/60
+        )
+        .toString()
+        .padStart(2,"0");
+
+
+    const sec =
+        (totalSec%60)
+        .toString()
+        .padStart(2,"0");
+
+
+    return `${min}:${sec}`;
+
+}
+
+
+
+function updateRecordButton(){
+
+
+    if(
+        !RecordButton.el
+    ){
+
+
+        return;
+
+    }
+
+
+
+    if(
+        Recorder.active
+    ){
+
+
+        const elapsed =
+            performance.now() -
+            Recorder.startTime;
+
+
+        RecordButton.el.textContent =
+            `⏹ ${formatElapsed(elapsed)}`;
+
+
+        RecordButton.el.style.background =
+            "var(--error-color)";
+
+
+        RecordButton.el.style.animation =
+            "pulse 2s infinite";
+
+
+    }else{
+
+
+        RecordButton.el.textContent =
+            "⏺ Rec";
+
+
+        RecordButton.el.style.background =
+            "";
+
+
+        RecordButton.el.style.animation =
+            "none";
+
+
+    }
+
+}
+
+
+
+/* =========================
+   Capture Toolbar
+   (Screenshot / Record buttons
+   を既存のnavバーに追加)
+========================= */
+
+
+const RecordButton = {
+
+    el:null
+
+};
+
+
+
+function createCaptureToolbarButtons(){
+
+
+    const nav =
+        document.querySelector(
+            "nav"
+        );
+
+
+
+    if(!nav){
+
+
+        console.warn(
+            "nav element not found, skipping toolbar buttons"
+        );
+
+
+        return;
+
+    }
+
+
+
+    if(
+        document.getElementById(
+            "screenshotButton"
+        )
+    ){
+
+
+        return;
+
+    }
+
+
+
+    const shotButton =
+        document.createElement(
+            "button"
+        );
+
+
+    shotButton.id =
+        "screenshotButton";
+
+
+    shotButton.textContent =
+        "📷 Shot";
+
+
+    shotButton.addEventListener(
+        "click",
+        takeScreenshot
+    );
+
+
+
+    const recButton =
+        document.createElement(
+            "button"
+        );
+
+
+    recButton.id =
+        "recordButton";
+
+
+    recButton.textContent =
+        "⏺ Rec";
+
+
+    recButton.addEventListener(
+        "click",
+        toggleRecording
+    );
+
+
+
+    nav.appendChild(
+        shotButton
+    );
+
+
+    nav.appendChild(
+        recButton
+    );
+
+
+
+    RecordButton.el =
+        recButton;
+
+}
+
+
+
+window.addEventListener(
+    "load",
+    createCaptureToolbarButtons
+);
+
+
+
+window.takeScreenshot =
+    takeScreenshot;
+
+
+
+window.toggleRecording =
+    toggleRecording;
+
+
+
+/* =========================
    Get Cameras
 ========================= */
 
@@ -1106,6 +1813,13 @@ function stopCapture(){
 
 
     stopFpsMonitor();
+
+
+    if(Recorder.active){
+
+        stopRecording();
+
+    }
 
 
 
