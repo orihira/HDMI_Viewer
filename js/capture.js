@@ -391,6 +391,211 @@ window.addEventListener(
 
 
 /* =========================
+   Realtime FPS Monitor
+
+   getSettings()のframeRateは
+   「要求値」でしかないので、
+   実際に届いているフレーム数を
+   video.requestVideoFrameCallback()
+   で直接カウントして
+   画面に表示する。
+========================= */
+
+
+const FpsMonitor = {
+
+    active:false,
+
+    count:0,
+
+    lastReportTime:0,
+
+    badgeEl:null
+
+};
+
+
+
+function createFpsBadge(){
+
+
+    const badge =
+        document.createElement("div");
+
+
+    badge.id =
+        "fps-badge";
+
+
+    badge.style.cssText = `
+        position:fixed;
+        left:8px;
+        top:8px;
+        z-index:100000;
+        background:rgba(0,0,0,0.7);
+        color:#0f0;
+        font-family:monospace;
+        font-size:13px;
+        padding:4px 8px;
+        border-radius:6px;
+        pointer-events:none;
+    `;
+
+
+    badge.textContent =
+        "-- fps";
+
+
+    document.body.appendChild(
+        badge
+    );
+
+
+    FpsMonitor.badgeEl =
+        badge;
+
+}
+
+
+
+function startFpsMonitor(video){
+
+
+    if(
+        !video.requestVideoFrameCallback
+    ){
+
+
+        console.warn(
+            "requestVideoFrameCallback is not supported. Realtime FPS unavailable."
+        );
+
+
+        return;
+
+    }
+
+
+
+    if(!FpsMonitor.badgeEl){
+
+        createFpsBadge();
+
+    }
+
+
+
+    FpsMonitor.active =
+        true;
+
+
+    FpsMonitor.count =
+        0;
+
+
+    FpsMonitor.lastReportTime =
+        performance.now();
+
+
+
+    function onFrame(
+        now,
+        metadata
+    ){
+
+
+        if(!FpsMonitor.active){
+
+            return;
+
+        }
+
+
+
+        FpsMonitor.count++;
+
+
+
+        const elapsed =
+            now -
+            FpsMonitor.lastReportTime;
+
+
+
+        if(elapsed >= 1000){
+
+
+            const fps =
+                (
+                    FpsMonitor.count /
+                    (elapsed/1000)
+                )
+                .toFixed(1);
+
+
+
+            if(FpsMonitor.badgeEl){
+
+                FpsMonitor.badgeEl.textContent =
+                    `${fps} fps (real)`;
+
+            }
+
+
+
+            console.log(
+                `Realtime FPS: ${fps}`
+            );
+
+
+
+            FpsMonitor.count =
+                0;
+
+
+            FpsMonitor.lastReportTime =
+                now;
+
+
+        }
+
+
+
+        video.requestVideoFrameCallback(
+            onFrame
+        );
+
+    }
+
+
+
+    video.requestVideoFrameCallback(
+        onFrame
+    );
+
+}
+
+
+
+function stopFpsMonitor(){
+
+
+    FpsMonitor.active =
+        false;
+
+
+    if(FpsMonitor.badgeEl){
+
+        FpsMonitor.badgeEl.textContent =
+            "-- fps";
+
+    }
+
+}
+
+
+
+/* =========================
    Get Cameras
 ========================= */
 
@@ -733,6 +938,12 @@ async function startCapture(){
 
 
 
+        startFpsMonitor(
+            video
+        );
+
+
+
 
 
         document
@@ -892,6 +1103,10 @@ async function startCapture(){
 
 
 function stopCapture(){
+
+
+    stopFpsMonitor();
+
 
 
     if(Capture.stream){
