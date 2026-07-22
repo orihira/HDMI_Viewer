@@ -1,7 +1,7 @@
 /* =====================================================
    HDMI View
    Main Style Sheet
-   Version 1.0.0
+   Version 1.1.0
 
    Part 1:
    - Reset
@@ -29,6 +29,7 @@
     --text-secondary: #8e8e93;
 
     --accent-color: #0a84ff;
+    --accent-color-2: #3cdfff;
 
     --success-color: #30d158;
     --warning-color: #ffd60a;
@@ -134,10 +135,10 @@ body {
 
 
     background:
-        linear-gradient(
-            145deg,
-            #111111,
-            #050505
+        radial-gradient(
+            circle at 50% 38%,
+            #1a1c22,
+            #060609
         );
 
 
@@ -148,15 +149,91 @@ body {
 }
 
 
+/* Logo Mark */
+
+.logo-mark {
+
+    width: 112px;
+
+    height: 112px;
+
+    margin-bottom: 8px;
+
+    animation:
+
+        logoPulse
+
+        2.4s
+
+        ease-in-out
+
+        infinite;
+
+}
+
+
+.logo-mark img {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: block;
+
+    filter:
+
+        drop-shadow(
+
+            0 0 24px
+
+            rgba(10,132,255,0.55)
+
+        );
+
+}
+
+
 #loading-screen h1 {
 
-    margin-top: 25px;
+    margin-top: 18px;
 
-    font-size: 32px;
+    font-size: 34px;
 
-    font-weight: 700;
+    font-weight: 800;
 
     letter-spacing: -1px;
+
+}
+
+
+#loading-screen h1 span {
+
+    background:
+
+        linear-gradient(
+
+            120deg,
+
+            var(--accent-color),
+
+            var(--accent-color-2)
+
+        );
+
+
+    -webkit-background-clip:
+
+        text;
+
+
+    background-clip:
+
+        text;
+
+
+    -webkit-text-fill-color:
+
+        transparent;
 
 }
 
@@ -169,34 +246,62 @@ body {
 
     font-size: 15px;
 
+    letter-spacing: 0.2px;
+
 }
 
 
-/* Loader */
+/* Loading progress bar (shimmer) */
 
-.loader {
+.loading-bar {
 
-    width: 48px;
+    width: 160px;
 
-    height: 48px;
+    height: 4px;
 
-    border-radius: 50%;
+    margin-top: 28px;
 
-    border:
+    border-radius: 999px;
 
-        4px solid
+    overflow: hidden;
 
-        rgba(255,255,255,0.15);
+    background:
+
+        rgba(255,255,255,0.08);
+
+}
 
 
-    border-top-color:
+.loading-bar-fill {
 
-        var(--accent-color);
+    width: 40%;
+
+    height: 100%;
+
+    border-radius: 999px;
+
+    background:
+
+        linear-gradient(
+
+            90deg,
+
+            var(--accent-color),
+
+            var(--accent-color-2)
+
+        );
 
 
     animation:
 
-        spin 1s linear infinite;
+        shimmer
+
+        1.3s
+
+        ease-in-out
+
+        infinite;
 
 }
 
@@ -1025,6 +1130,81 @@ button:focus-visible {
 }
 
 
+
+/* Logo Pulse (loading screen) */
+
+@keyframes logoPulse {
+
+
+    0%,
+    100% {
+
+        transform:
+
+            scale(1);
+
+
+        filter:
+
+            drop-shadow(
+
+                0 0 18px
+
+                rgba(10,132,255,0.45)
+
+            );
+
+    }
+
+
+    50% {
+
+        transform:
+
+            scale(1.06);
+
+
+        filter:
+
+            drop-shadow(
+
+                0 0 34px
+
+                rgba(60,223,255,0.65)
+
+            );
+
+    }
+
+}
+
+
+
+/* Loading bar shimmer */
+
+@keyframes shimmer {
+
+
+    0% {
+
+        transform:
+
+            translateX(-120%);
+
+    }
+
+
+    100% {
+
+        transform:
+
+            translateX(360%);
+
+    }
+
+}
+
+
 /* App Start Animation */
 
 #app {
@@ -1214,6 +1394,7 @@ button:focus-visible {
 
 
 }
+
 
 
 /* =========================
